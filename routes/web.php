@@ -36,4 +36,6 @@ Route::middleware('auth')->group(function () {
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
 });
 
+// Gunakan POST karena form mengirim data
+Route::post('/update-kolektif/{token}', [SuratKeluarController::class, 'updateKolektif']);
 require __DIR__.'/auth.php';

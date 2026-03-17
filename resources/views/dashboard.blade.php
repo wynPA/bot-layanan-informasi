@@ -7,7 +7,7 @@
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
     <style>
-        body { font-family: 'Inter', sans-serif; background-color: #f4f7f6; overflow-x: hidden; }
+        body { font-family: 'Inter', sans-serif; background-image: url("images/background.png"); background-color: #f4f7f6; overflow-x: hidden; }
         /* Sidebar Styling */
         #sidebar { background: #1a1c23; min-height: 100vh; min-width: 250px; color: #fff; transition: all 0.3s; }
         .nav-link { color: #9da5b1; padding: 12px 20px; font-weight: 500; }
@@ -63,7 +63,7 @@
         .file-link { color: #2d3139; text-decoration: none; }
         .file-link:hover { color: #3b82f6; }
 
-        /* FAB Refresh - Sovereign Edition */
+        /* FAB Refresh  */
         .fab-refresh {
             position: fixed;
             bottom: 30px;
@@ -174,10 +174,11 @@
 
 <div class="d-flex">
     <div id="sidebar" class="d-none d-md-block shadow-lg border-end border-secondary border-opacity-10" style="width: 280px; background: #1a1c23; min-height: 100vh;">
-        <div class="p-4 border-bottom border-secondary border-opacity-25">
-            <!-- <div class="d-flex align-items-center gap-3"> -->
-                <h5 class="text-white fw-bold mb-0" style="letter-spacing: 1px;">BLI MADE</h5>
-            <!-- </div> -->
+        <div class="px-4 py-3 border-bottom border-secondary border-opacity-25 d-flex align-items-center justify-content-center">
+            <img src="{{ asset('images/logo-bli-made.png') }}" 
+                alt="Logo BLI MADE" 
+                class="img-fluid" 
+                style="object-fit: contain; width: 100%; max-height: 65px; filter: drop-shadow(0px 2px 4px rgba(0,0,0,0.2));">
         </div>
 
         <div class="mt-auto p-4">
@@ -238,7 +239,6 @@
                 <span>Statistik Bulanan</span>
             </a>
         </nav>
-
     </div>
 
     <div class="flex-grow-1">
@@ -404,132 +404,132 @@
                     </div>
                 </div>
                 @endforeach
-            </div>
+        </div>
 
-            <script>
-                // 1. Trigger Status DIBACA saat Download diklik
-                function updateStatus(id) {
-                    const badge = document.getElementById(`status-badge-${id}`);
+        <script>
+            // 1. Trigger Status DIBACA saat Download diklik
+            function updateStatus(id) {
+                const badge = document.getElementById(`status-badge-${id}`);
+                
+                if (badge.innerText.trim() !== 'Dibaca') {
+                    // Hapus class warna kuning sepenuhnya termasuk border-nya
+                    badge.classList.remove('bg-warning-subtle', 'text-warning', 'border-warning');
                     
-                    if (badge.innerText.trim() !== 'Dibaca') {
-                        // Hapus class warna kuning sepenuhnya termasuk border-nya
-                        badge.classList.remove('bg-warning-subtle', 'text-warning', 'border-warning');
-                        
-                        // Tambahkan class hijau subtle LENGKAP dengan border
-                        badge.classList.add('bg-success-subtle', 'text-success', 'border', 'border-success');
-                        badge.innerText = 'Dibaca';
+                    // Tambahkan class hijau subtle LENGKAP dengan border
+                    badge.classList.add('bg-success-subtle', 'text-success', 'border', 'border-success');
+                    badge.innerText = 'Dibaca';
 
-                        // Update angka statistik (Tetap)
-                        const pendingElement = document.getElementById('pending-count');
-                        let currentCount = parseInt(pendingElement.innerText);
-                        if (currentCount > 0) {
-                            pendingElement.innerText = currentCount - 1;
-                        }
-                        
-                        fetch(`/update-status/${id}`, { 
+                    // Update angka statistik (Tetap)
+                    const pendingElement = document.getElementById('pending-count');
+                    let currentCount = parseInt(pendingElement.innerText);
+                    if (currentCount > 0) {
+                        pendingElement.innerText = currentCount - 1;
+                    }
+                    
+                    fetch(`/update-status/${id}`, { 
+                        method: 'POST', 
+                        headers: { 'X-CSRF-TOKEN': '{{ csrf_token() }}' } 
+                    });
+                }
+            }
+
+            // 2. Fungsi Penyimpanan dengan "Satpam Penjaga" (PENTING!)
+            function saveChecklist(id, type, element) {
+                const badge = document.getElementById(`status-badge-${id}`);
+                
+                // CEK STATUS DULU: Jika masih Pending, batalkan semua.
+                if (badge.innerText.trim().toLowerCase() === 'pending') {
+                    alert("Surat ini masih berstatus pending, mohon baca isi dokumen sebelum mengisi checklist");
+                    element.checked = false; // Batalkan centang di layar
+                    return; // BERHENTI DI SINI: Data tidak akan dikirim ke server/database
+                }
+
+                // Jika lolos (Status sudah Dibaca), baru kirim ke database
+                fetch(`/update-checklist/${id}`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRF-TOKEN': '{{ csrf_token() }}'
+                    },
+                    body: JSON.stringify({
+                        type: type,
+                        value: element.checked ? 1 : 0
+                    })
+                })
+                .then(response => response.json())
+                .then(data => {
+                    // Setelah berhasil simpan, baru cek apakah sudah lengkap untuk di-archive
+                    checkCompletion(id);
+                });
+            }
+
+            // 3. Logika Auto-Archive (Hanya fokus pada pindah data)
+            function checkCompletion(id) {
+                const row = document.getElementById(`row-${id}`);
+                const checkboxes = row.querySelectorAll('.process-check');
+                const allChecked = Array.from(checkboxes).every(c => c.checked);
+
+                if (allChecked) {
+                    row.style.transition = 'all 0.5s ease';
+                    row.style.opacity = '0';
+                    row.style.transform = 'translateX(20px)';
+                    
+                    setTimeout(() => {
+                        row.remove();
+                        fetch(`/archive-surat/${id}`, { 
                             method: 'POST', 
                             headers: { 'X-CSRF-TOKEN': '{{ csrf_token() }}' } 
                         });
+                        checkEmptyCategory();
+                    }, 500);
+                }
+            }
+
+            function checkEmptyCategory() {
+                document.querySelectorAll('[id^="category-block-"]').forEach(card => {
+                    if (card.querySelectorAll('.surat-row').length === 0) {
+                        card.remove();
                     }
+                });
+            }
+
+            // A. Fungsi Toggle Sidebar (Hamburger)
+            document.getElementById('sidebarToggle').addEventListener('click', function() {
+                const sidebar = document.getElementById('sidebar');
+                if (sidebar.classList.contains('d-md-block')) {
+                    sidebar.classList.remove('d-md-block');
+                    sidebar.classList.add('d-none');
+                } else {
+                    sidebar.classList.add('d-md-block');
+                    sidebar.classList.remove('d-none');
                 }
+            });
 
-                // 2. Fungsi Penyimpanan dengan "Satpam Penjaga" (PENTING!)
-                function saveChecklist(id, type, element) {
-                    const badge = document.getElementById(`status-badge-${id}`);
-                    
-                    // CEK STATUS DULU: Jika masih Pending, batalkan semua.
-                    if (badge.innerText.trim().toLowerCase() === 'pending') {
-                        alert("Surat ini masih berstatus pending, mohon baca isi dokumen sebelum mengisi checklist");
-                        element.checked = false; // Batalkan centang di layar
-                        return; // BERHENTI DI SINI: Data tidak akan dikirim ke server/database
-                    }
+            // B. Fungsi Real-Time Search (Filter Tabel)
+            function filterTable() {
+                let input = document.getElementById("tableSearch");
+                let filter = input.value.toLowerCase();
+                let rows = document.querySelectorAll(".surat-row");
 
-                    // Jika lolos (Status sudah Dibaca), baru kirim ke database
-                    fetch(`/update-checklist/${id}`, {
-                        method: 'POST',
-                        headers: {
-                            'Content-Type': 'application/json',
-                            'X-CSRF-TOKEN': '{{ csrf_token() }}'
-                        },
-                        body: JSON.stringify({
-                            type: type,
-                            value: element.checked ? 1 : 0
-                        })
-                    })
-                    .then(response => response.json())
-                    .then(data => {
-                        // Setelah berhasil simpan, baru cek apakah sudah lengkap untuk di-archive
-                        checkCompletion(id);
-                    });
-                }
-
-                // 3. Logika Auto-Archive (Hanya fokus pada pindah data)
-                function checkCompletion(id) {
-                    const row = document.getElementById(`row-${id}`);
-                    const checkboxes = row.querySelectorAll('.process-check');
-                    const allChecked = Array.from(checkboxes).every(c => c.checked);
-
-                    if (allChecked) {
-                        row.style.transition = 'all 0.5s ease';
-                        row.style.opacity = '0';
-                        row.style.transform = 'translateX(20px)';
-                        
-                        setTimeout(() => {
-                            row.remove();
-                            fetch(`/archive-surat/${id}`, { 
-                                method: 'POST', 
-                                headers: { 'X-CSRF-TOKEN': '{{ csrf_token() }}' } 
-                            });
-                            checkEmptyCategory();
-                        }, 500);
-                    }
-                }
-
-                function checkEmptyCategory() {
-                    document.querySelectorAll('[id^="category-block-"]').forEach(card => {
-                        if (card.querySelectorAll('.surat-row').length === 0) {
-                            card.remove();
-                        }
-                    });
-                }
-
-                // A. Fungsi Toggle Sidebar (Hamburger)
-                document.getElementById('sidebarToggle').addEventListener('click', function() {
-                    const sidebar = document.getElementById('sidebar');
-                    if (sidebar.classList.contains('d-md-block')) {
-                        sidebar.classList.remove('d-md-block');
-                        sidebar.classList.add('d-none');
+                rows.forEach(row => {
+                    // Cari di kolom Pengirim dan Nama File
+                    let text = row.innerText.toLowerCase();
+                    if (text.includes(filter)) {
+                        row.style.display = "";
                     } else {
-                        sidebar.classList.add('d-md-block');
-                        sidebar.classList.remove('d-none');
+                        row.style.display = "none";
                     }
                 });
 
-                // B. Fungsi Real-Time Search (Filter Tabel)
-                function filterTable() {
-                    let input = document.getElementById("tableSearch");
-                    let filter = input.value.toLowerCase();
-                    let rows = document.querySelectorAll(".surat-row");
+                // Sembunyikan kategori jika semua isinya terfilter
+                document.querySelectorAll('[id^="category-block-"]').forEach(block => {
+                    let visibleRows = block.querySelectorAll('.surat-row[style=""]');
+                    block.style.display = visibleRows.length > 0 || filter === "" ? "" : "none";
+                });
+            }
 
-                    rows.forEach(row => {
-                        // Cari di kolom Pengirim dan Nama File
-                        let text = row.innerText.toLowerCase();
-                        if (text.includes(filter)) {
-                            row.style.display = "";
-                        } else {
-                            row.style.display = "none";
-                        }
-                    });
-
-                    // Sembunyikan kategori jika semua isinya terfilter
-                    document.querySelectorAll('[id^="category-block-"]').forEach(block => {
-                        let visibleRows = block.querySelectorAll('.surat-row[style=""]');
-                        block.style.display = visibleRows.length > 0 || filter === "" ? "" : "none";
-                    });
-                }
-
-            </script>
-        </div>
+        </script>
+        
     </div>
 </div>
 
