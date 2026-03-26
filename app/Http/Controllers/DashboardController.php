@@ -35,18 +35,34 @@ class DashboardController extends Controller
         return response()->json(['success' => true]);
     }
 
-    public function index() {
-        // 1. Data aktif di tabel (yang belum di-arsip)
-        $surat = \App\Models\SuratMasuk::where('is_archived', 0)
-                    ->orderBy('created_at', 'desc')
-                    ->get();
-        
-        // 2. LOGIKA BARU: Total Dokumen Masuk KHUSUS HARI INI
-        $totalHarian = \App\Models\SuratMasuk::whereDate('created_at', now()->toDateString())
-                        ->count();
-        
-        return view('dashboard', compact('surat', 'totalHarian'));
+    public function index()
+    {
+        $today = now()->toDateString();
+
+        // 1. BEBAN KERJA (Statistik) - Pastikan variabel ini ada!
+        $totalSuratHarian = SuratMasuk::whereDate('created_at', $today)->count();
+        $totalTerproses = SuratMasuk::whereDate('updated_at', $today)->where('check_esurat', 1)->count();
+        $totalMenunggu = SuratMasuk::where('check_esurat', 0)->count();
+
+        // 2. QUERY UTAMA (Yang kita perbaiki tadi)
+        $surat = SuratMasuk::where(function($query) {
+            $query->where('kategori', '!=', 'Undangan')
+                ->where('check_esurat', 0);
+        })
+        ->orWhere(function($query) {
+            $query->where('kategori', 'Undangan')
+                ->where(function($q) {
+                    $q->where('check_esurat', 0)
+                        ->orWhere('check_srikandi', 0);
+                });
+        })
+        ->orderBy('created_at', 'asc')
+        ->get();
+
+        // 3. RETURN (Gunakan compact hanya jika nama variabel di atas sudah benar)
+        return view('dashboard', compact('surat', 'totalSuratHarian', 'totalTerproses', 'totalMenunggu'));
     }
+    
 
     public function storeFromBot(Request $request) {
         return DB::transaction(function () use ($request) {

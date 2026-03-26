@@ -26,5 +26,18 @@
             <p class="small text-muted mt-1">DISKOMINFOS Kota Denpasar</p>
         </div>
     </div>
+    
+<script>
+        // 1. Tambahkan state baru ke riwayat browser
+        history.pushState(null, null, location.href);
+
+        // 2. Setiap kali user mencoba kembali (back), paksa tetap di halaman ini
+        window.onpopstate = function () {
+            history.pushState(null, null, location.href);
+        };
+
+        // 3. Opsional: Tambahkan penutup tab otomatis (khusus untuk beberapa browser mobile/WA)
+        // Kadang tombol ini membantu user agar tidak bingung
+    </script>
 </body>
 </html>

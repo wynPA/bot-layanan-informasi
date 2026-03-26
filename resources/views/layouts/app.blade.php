@@ -5,7 +5,9 @@
     <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
     
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">    
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet"> 
+    <link href="https://fonts.googleapis.com/css2?family=Inria+Serif:wght@400;700&display=swap" rel="stylesheet"> 
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">  
     
     <style>
         :root {
@@ -18,15 +20,18 @@
         /* --- SIDEBAR --- */
         #sidebar { 
             background: #1a1c23; 
-            height: 100vh;
+            min-height: 100vh; 
+            height: auto;
             min-width: 250px;
             max-width: 250px; 
             color: #fff; 
             display: flex; 
             flex-direction: column; 
             z-index: 2000; 
-            position: sticky;
+            position: fixed;
             top: 0;
+            left: 0;
+            bottom: 0;
         }
 
         .sidebar-label {
@@ -55,6 +60,36 @@
             border-left: 3px solid #3b82f6;
             font-weight: 600;
         }
+        /* Bagian Footer Sidebar (Profil User) */
+        .sidebar-user-footer {
+            margin-top: auto; /* Dorong ke paling bawah */
+            background: #1a1c23; /* Pastikan warnanya sama dengan sidebar */
+            position: sticky;
+            bottom: 0;
+            z-index: 10;
+            /* Tambahkan sedikit shadow agar terlihat terpisah saat menu di-scroll */
+            border-top: 1px solid rgba(255, 255, 255, 0.05); 
+        }
+
+        .flex-grow-1.bg-light {
+            margin-left: 250px; /* Beri ruang untuk sidebar di Desktop */
+            width: calc(100% - 250px);
+            transition: all 0.3s ease;
+            min-height: 100vh;
+        }
+
+        #sidebar.d-none ~ .flex-grow-1.bg-light {
+            margin-left: 0;
+            width: 100%;
+        }
+
+        /* Area Menu agar bisa di-scroll mandiri di dalam sidebar */
+        .sidebar-menu-content {
+            flex-grow: 1;
+            overflow-y: auto; /* Menu bisa di-scroll jika kepanjangan */
+            scrollbar-width: none; /* Sembunyikan scrollbar untuk tampilan bersih */
+        }
+        /* .sidebar-menu-content::-webkit-scrollbar { display: none; } */
 
         /* --- USER MENU & FLOATING --- */
         .user-floating-menu {
@@ -98,7 +133,168 @@
         .navbar { z-index: 1000; }
         .search-container { transition: width 0.3s ease; }
 
-        /* --- RESPONSIVE MOBILE --- */
+        /* Container Utama Card */
+        .stats-bar-sovereign {
+            background: #ffffff;
+            border-radius: 16px;
+            padding: 12px 24px;
+            display: inline-flex; /* Agar tidak memenuhi lebar dashboard */
+            align-items: center;
+            gap: 20px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.03);
+            border: 1px solid #f1f5f9;
+            margin-bottom: 25px;
+        }
+
+        /* Kalender Area (Kiri) */
+        .date-box {
+            text-align: center;
+            padding-right: 15px;
+            
+        }
+        .date-number {
+            font-size: 0.75rem;
+            color: #64748b;
+            display: block;
+           
+        }
+        .day-name {
+            font-size: 2rem;
+            font-weight: 700;
+            color: #3b82f6; /* Biru sesuai desainmu */
+            text-transform: uppercase;
+            line-height: 1;
+            font-family: 'Inria Serif', serif;
+        }
+
+        /* Divider Vertikal */
+        .stats-divider {
+            width: 1px;
+            height: 40px;
+            background-color: #000000;
+        }
+
+        /* Angka & Label */
+        .stat-item { text-align: center; min-width: 60px; }
+        .stat-value { font-size: 1.6rem; font-weight: 700; color: #1e293b; display: block; line-height: 1; padding-top: 8px; }
+        .stat-label { font-size: 0.7rem; color: #64748b; font-weight: 600; }
+
+        /* Ikon Jam Menunggu */
+        .waiting-icon-circle {
+            background-color: #fffbeb;
+            width: 42px;
+            height: 42px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #f59e0b;
+            margin-right: 10px;
+        }
+
+        /* --- FAB SYSTEM (Clean & Integrated) --- */
+        /* 1. Kontainer Utama: Menumpuk FAB secara vertikal di pojok */
+        .fab-container {
+            position: fixed;
+            bottom: 30px;
+            right: 30px;
+            z-index: 1100;
+            display: flex;
+            flex-direction: column; /* Tumpuk ke bawah */
+            gap: 15px; /* Jarak antar tombol (reposisi) */
+            align-items: center; /* Sejajar tengah */
+        }
+
+        /* 2. Class Universal: Desain Lingkaran, Ukuran, dan Shadow yang SAMA */
+        .fab-universal {
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border: none;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            /* CSS bawaan agar SVG di dalamnya pas */
+            padding: 0; 
+        }
+
+        /* 3. Gaya Khusus: FAB Refresh (Biru Mengkilap + Efek Putar) */
+        .fab-refresh {
+            background: linear-gradient(135deg, #3b82f6, #2563eb);
+            color: white;
+            box-shadow: 0 4px 15px rgba(37, 99, 235, 0.4);
+        }
+
+        .fab-refresh:hover {
+            transform: rotate(180deg) scale(1.1); /* Efek putar sakti */
+            background: linear-gradient(135deg, #2563eb, #1d4ed8);
+            box-shadow: 0 6px 20px rgba(37, 99, 235, 0.6);
+        }
+
+        /* 4. Gaya Khusus: FAB Scroll (Abu-abu Netral + Efek Naik) */
+        .fab-scroll {
+            display: none; /* Default tersembunyi, diatur JS */
+            background: #f1f5f9; /* Abu-abu netral */
+            color: #64748b; /* Panah abu-abu tua */
+            border: 2px solid #e2e8f0;
+        }
+
+        .fab-scroll:hover {
+            transform: translateY(-5px) scale(1.1); /* Efek naik sakti */
+            background: #e2e8f0;
+            color: #334155;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+        }
+
+        /* 5. Ukuran Icon Universal di dalam FAB */
+        .fab-universal svg {
+            width: 28px;
+            height: 28px;
+        }
+
+        
+
+        /* 1. Kustomisasi Scrollbar Sidebar */
+        .sidebar-content-sovereign::-webkit-scrollbar {
+            width: 5px; /* Buat sangat tipis agar tidak memotong area */
+        }
+
+        .sidebar-content-sovereign::-webkit-scrollbar-track {
+            background: transparent; /* Latar belakang track transparan agar tidak memotong sidebar */
+        }
+
+        .sidebar-content-sovereign::-webkit-scrollbar-thumb {
+            background: rgba(255, 255, 255, 0.1); /* Warna abu-abu sangat tipis */
+            border-radius: 10px;
+        }
+
+        .sidebar-content-sovereign:hover::-webkit-scrollbar-thumb {
+            background: rgba(255, 255, 255, 0.3); /* Sedikit lebih terang saat di-hover */
+        }
+
+        /* Update: Targetkan class pembungkus menu di sidebar kamu */
+        .flex-grow-1.overflow-y-auto::-webkit-scrollbar {
+            width: 5px; 
+        }
+
+        .flex-grow-1.overflow-y-auto::-webkit-scrollbar-track {
+            background: transparent; 
+        }
+
+        .flex-grow-1.overflow-y-auto::-webkit-scrollbar-thumb {
+            background: rgba(255, 255, 255, 0.1); 
+            border-radius: 10px;
+        }
+
+        .flex-grow-1.overflow-y-auto:hover::-webkit-scrollbar-thumb {
+            background: rgba(255, 255, 255, 0.3); 
+        }
+
+/* ------------------------------------------------ */
+/* --- --------- RESPONSIVE MOBILE ------------ --- */
+/* ------------------------------------------------ */
         @media (max-width: 767.98px) {
             #sidebar {
                 position: fixed !important;
@@ -121,14 +317,39 @@
             .sidebar-overlay.active { display: block; }
 
             .user-floating-menu {
-                left: 10px !important;
+                left: 17px !important;
                 bottom: 80px !important;
             }
 
-            /* Penyesuaian lebar Search Bar di Mobile */
+
+            /* 1. Paksa area utama mengambil lebar penuh agar tabel tidak terdorong */
+            .flex-grow-1.bg-light {
+                margin-left: 0 !important;
+                width: 100% !important;
+                overflow-x: hidden; 
+                min-height: 100vh;
+                display: flex;
+                flex-direction: column;
+            }
+
+            /* 2. Search Container: Sesuai eksperimenmu (35%) */
             .search-container {
                 width: var(--search-mobile-width) !important;
-                max-width: 35% !important;
+                max-width: 73% !important;
+                flex: none !important; /* Mencegah flexbox memaksa lebar lain */
+            }
+
+            /* 3. Tabel Responsive: Agar tabel bisa di-scroll di dalam kotaknya saja */
+            main {
+                padding: 10px !important;
+            }
+            
+            /* Gunakan selector langsung ke tabel agar tidak perlu wrapper div baru */
+            table {
+                display: block;
+                width: 100%;
+                overflow-x: auto;
+                white-space: nowrap; /* Mencegah teks nomor surat pecah jadi 2 baris */
             }
 
             /* Memastikan Nama Instansi Benar-benar Hilang di Mobile */
@@ -143,6 +364,17 @@
             }
 
             .navbar { padding: 0.5rem 0.75rem !important; }
+
+            .date-box { display: none; }
+            .stats-divider {
+                display: block !important; 
+                width: 1px; 
+                height: 30px; 
+                background-color: #000000; 
+                align-self: center;
+            }
+            .stats-bar-sovereign { width: 100%; display: flex; justify-content: space-around; }
+            
         }
     </style>
 </head>
@@ -174,7 +406,7 @@
                 <img src="{{ asset('images/logo-bli-made.png') }}" alt="Logo" class="img-fluid" style="max-height: 65px;">
             </div>
 
-            <div class="flex-grow-1 overflow-y-auto">
+            <div class="flex-grow-1 overflow-y-auto sidebar-content-sovereign">
                 <div class="p-4">
                     <div class="p-3 rounded-4" style="background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.05);">
                         <small class="text-muted d-block mb-3 fw-bold" style="font-size: 0.65rem;">STATUS NOMOR</small>
@@ -182,51 +414,44 @@
                 </div>
 
                 <nav class="nav flex-column px-3 gap-1">
-                    <small class="sidebar-label px-3 mb-2 mt-2">MENU UTAMA</small>      
-                    <a class="nav-link rounded-3 d-flex align-items-center gap-3" href="/dashboard">
-                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" width="20">
-                            <path stroke-linecap="round" stroke-linejoin="round" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
-                        </svg>
-                        <span>Dashboard</span>
+                    <small class="sidebar-label px-3 mb-2 mt-2">ADMINISTRASI SURAT</small>      
+                    <a class="nav-link rounded-3 d-flex align-items-center gap-3 {{ request()->is('dashboard') ? 'active' : '' }}" href="{{ route('dashboard') }}">
+                        <i class="bi bi-envelope-paper"></i>
+                        <span>Surat Masuk</span>
                     </a>
 
-                    <a class="nav-link active rounded-3 d-flex align-items-center gap-3 {{ request()->is('surat-keluar*') ? 'active' : '' }}" href="{{ route('surat-keluar.index') }}">
-                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" width="20">
-                            <path stroke-linecap="round" stroke-linejoin="round" d="M6 12L3.269 3.126A59.768 59.768 0 0121.485 12 59.77 59.77 0 013.27 20.876L5.999 12zm0 0h7.5" />
-                        </svg>
+                    <a class="nav-link rounded-3 d-flex align-items-center gap-3 {{ request()->is('surat-keluar*') ? 'active' : '' }}" href="{{ route('surat-keluar.index') }}">                        
+                        <i class="bi bi-paperclip"></i>
                         <span>Surat Keluar</span>
                     </a>
 
                     <a class="nav-link rounded-3 d-flex align-items-center gap-3" href="#">
-                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" width="20">
-                            <path stroke-linecap="round" stroke-linejoin="round" d="M5 19a2 2 0 01-2-2V7a2 2 0 012-2h4l2 2h4a2 2 0 012 2v1M5 19h14a2 2 0 002-2v-5M5 19v-4a2 2 0 00-2-2h14a2 2 0 002 2v2a2 2 0 00-2 2H5" />
-                        </svg>
+                        <i class="bi bi-archive"></i>
                         <span>Arsip Digital</span>
                     </a>
 
-                    <a class="nav-link rounded-3 d-flex align-items-center gap-3" href="#">
-                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" width="20">
-                            <path stroke-linecap="round" stroke-linejoin="round" d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
-                        </svg>
-                        <span>Konfigurasi Bot</span>
-                    </a>
-
-                    <small class="sidebar-label px-3 mt-4 mb-2">LAPORAN</small>
+                    <small class="sidebar-label px-3 mt-4 mb-2">OPSI PENGEMBANG</small>
                     
                     <a class="nav-link rounded-3 d-flex align-items-center gap-3" href="#">
-                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" width="20">
-                            <path stroke-linecap="round" stroke-linejoin="round" d="M11 3.055A9.001 9.001 0 1020.945 13H11V3.055z" />
-                            <path stroke-linecap="round" stroke-linejoin="round" d="M20.488 9H15V3.512A9.025 9.025 0 0120.488 9z" />
-                        </svg>
-                        <span>Statistik Bulanan</span>
+                        <i class="bi bi-gear"></i>
+                        <span>Konfigurasi</span>
+                    </a>
+                    <a class="nav-link rounded-3 d-flex align-items-center gap-3" href="#">
+                        <i class="bi bi-clock-history"></i>
+                        <span>Log Aktifitas</span>
+                    </a>
+                    
+                    <small class="sidebar-label px-3 mt-4 mb-2">LAINNYA</small>
+
+                    <a class="nav-link rounded-3 d-flex align-items-center gap-3" href="#">
+                        <i class="bi bi-question-circle"></i>
+                        <span>Petunjuk</span>
                     </a>
                 </nav>
             </div>
 
-            <div class="mt-auto p-3 border-top border-secondary border-opacity-10">
-                <div class="d-flex align-items-center gap-3 p-2 rounded-3 cursor-pointer user-field-hover position-relative" 
-                    onclick="toggleUserMenu()" id="userMenuTrigger">
-                    
+            <div class="sidebar-user-footer p-3">
+                <div class="d-flex align-items-center gap-3 p-2 rounded-3 user-field-hover" onclick="toggleUserMenu()" id="userMenuTrigger">                
                     <div class="bg-primary rounded-circle d-flex align-items-center justify-content-center flex-shrink-0" style="width: 40px; height: 40px;">
                         <span class="text-white fw-bold">{{ substr(Auth::user()->name ?? 'W', 0, 1) }}</span>
                     </div>
@@ -246,7 +471,7 @@
         </div>
 
         <!-- navbar -->
-        <div class="flex-grow-1 bg-light">
+        <div id="contentArea" class="flex-grow-1 bg-light">
             <nav class="navbar navbar-expand navbar-light bg-white py-2 px-4 mb-4 shadow-sm border-bottom">
                 <div class="d-flex align-items-center gap-2 gap-md-3 flex-grow-1">
                     <button class="btn btn-link text-dark p-0 border-0" id="sidebarToggle">
@@ -268,24 +493,40 @@
                 </div>
 
                 <div class="ms-auto d-flex align-items-center gap-3">
-    <div class="text-end d-none d-lg-block instansi-text">
-        <p class="mb-0 fw-bold text-dark" style="font-size: 0.75rem; line-height: 1.2;">
-            DINAS KOMUNIKASI, INFORMATIKA<br>DAN STATISTIK KOTA DENPASAR
-        </p>
-    </div>
-    
-    <div class="vr opacity-25 d-none d-lg-block" style="height: 30px;"></div>
-    
-    <div class="bg-light rounded d-flex align-items-center justify-content-center flex-shrink-0" 
-         style="width: 40px; height: 40px; border: 1px dashed #ccc;">
-        <span style="font-size: 0.45rem;" class="text-muted fw-bold">LOGO<br>INSTANSI</span>
-    </div>
-</div>
+                    <div class="text-end d-none d-lg-block instansi-text">
+                        <p class="mb-0 fw-bold text-dark" style="font-size: 0.75rem; line-height: 1.2;">
+                            DINAS KOMUNIKASI, INFORMATIKA<br>DAN STATISTIK KOTA DENPASAR
+                        </p>
+                    </div>
+                    
+                    <div class="vr opacity-25 d-none d-lg-block" style="height: 30px;"></div>
+                    
+                    <div class="bg-light rounded d-flex align-items-center justify-content-center flex-shrink-0" 
+                        style="width: 40px; height: 40px; border: 1px dashed #ccc;">
+                        <span style="font-size: 0.45rem;" class="text-muted fw-bold">LOGO<br>INSTANSI</span>
+                    </div>
+                </div>
             </nav>
 
             <main class="p-4">
                 {{ $slot }}
             </main>
+
+            <div class="fab-container">
+                
+                <button id="scrollToTopBtn" class="fab-universal fab-scroll shadow-sm">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="3">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M5 15l7-7 7 7" />
+                    </svg>
+                </button>
+
+                <button id="refreshFab" class="fab-universal fab-refresh" onclick="location.reload();">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M16.023 9.348h4.992v-.001M2.985 19.644v-4.992m0 0h4.992m-4.993 0l3.181 3.183a8.25 8.25 0 0013.803-3.7M4.031 9.865a8.25 8.25 0 0113.803-3.7l3.181 3.182m0-4.991v4.99" />
+                    </svg>
+                </button>
+
+            </div>
         </div>
     </div>
 
@@ -293,6 +534,7 @@
         function toggleSidebar() {
             const sidebar = document.getElementById('sidebar');
             const overlay = document.getElementById('sidebarOverlay');
+            const content = document.querySelector('.flex-grow-1.bg-light');
             
             if (window.innerWidth < 768) {
                 sidebar.classList.toggle('show-mobile');
@@ -329,6 +571,25 @@
                 menu.classList.remove('active');
             }
         }
+
+        const scrollBtn = document.getElementById("scrollToTopBtn");
+
+        // Munculkan tombol saat scroll turun 300px
+        window.onscroll = function() {
+            if (document.body.scrollTop > 300 || document.documentElement.scrollTop > 300) {
+                scrollBtn.style.display = "flex";
+            } else {
+                scrollBtn.style.display = "none";
+            }
+        };
+
+        // Logika Scroll ke Atas saat diklik
+        scrollBtn.onclick = function() {
+            window.scrollTo({
+                top: 0,
+                behavior: "smooth" // Efek scroll halus ala High Science
+            });
+        };
     </script>
 </body>
 </html>

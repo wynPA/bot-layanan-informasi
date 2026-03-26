@@ -13,7 +13,8 @@ class SuratKeluarController extends Controller
     // 1. Dashboard: Lihat semua surat
     public function index()
     {
-        $data = SuratKeluar::orderBy('created_at', 'desc')->get();
+        // $data = SuratKeluar::orderBy('created_at', 'desc')->get();
+        $data = SuratKeluar::orderBy('nomor_urut', 'asc')->get();
         return view('surat_keluar.index', compact('data'));
     }
 
