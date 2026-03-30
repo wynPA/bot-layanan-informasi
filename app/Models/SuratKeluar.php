@@ -24,6 +24,7 @@ class SuratKeluar extends Model
         'whatsapp_number',
         'session_token',
         'status_isi',
+        'is_archived',
         'tgl_retensi',
         'file_surat'
     ];

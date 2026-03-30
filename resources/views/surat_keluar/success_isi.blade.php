@@ -28,16 +28,21 @@
     </div>
     
 <script>
-        // 1. Tambahkan state baru ke riwayat browser
+    // 1. Ganti entitas riwayat saat ini agar browser merasa tidak pernah dari halaman form
+    history.replaceState(null, null, location.href);
+
+    // 2. Kunci tombol back agar tetap di halaman ini
+    history.pushState(null, null, location.href);
+    window.onpopstate = function () {
         history.pushState(null, null, location.href);
+        // Alihkan paksa jika masih bandel
+        window.location.replace(location.href);
+    };
 
-        // 2. Setiap kali user mencoba kembali (back), paksa tetap di halaman ini
-        window.onpopstate = function () {
-            history.pushState(null, null, location.href);
-        };
-
-        // 3. Opsional: Tambahkan penutup tab otomatis (khusus untuk beberapa browser mobile/WA)
-        // Kadang tombol ini membantu user agar tidak bingung
-    </script>
+    // 3. Bersihkan form data jika user nekat kembali (keamanan tambahan)
+    if (window.performance && window.performance.navigation.type === 2) {
+        window.location.reload();
+    }
+</script>
 </body>
 </html>

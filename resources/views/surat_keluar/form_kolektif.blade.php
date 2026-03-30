@@ -85,6 +85,14 @@
         </div>
     </form>
 </div>
-
+<script>
+    // Jika user kembali ke halaman ini via tombol Back (Persisted Page)
+    window.addEventListener('pageshow', function(event) {
+        if (event.persisted || (typeof window.performance != "undefined" && window.performance.navigation.type === 2)) {
+            // Paksa muat ulang dari server, yang mana nanti akan ditolak oleh Controller
+            window.location.reload();
+        }
+    });
+</script>
 </body>
 </html>

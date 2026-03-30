@@ -11,6 +11,7 @@ Route::post('/update-checklist/{id}', [DashboardController::class, 'updateCheckl
 
 // Laman Dashboard Surat Keluar
 Route::get('/surat-keluar', [SuratKeluarController::class, 'index'])->name('surat-keluar.index');
+Route::post('/surat-keluar/arsipkan-selesai', [SuratKeluarController::class, 'arsipkanSelesai']);
 
 // Endpoint untuk Bot (Nanti diakses via Webhook)
 Route::post('/api/bot/request-nomor', [SuratKeluarController::class, 'generateFromBot']);
@@ -39,3 +40,10 @@ Route::middleware('auth')->group(function () {
 // Gunakan POST karena form mengirim data
 Route::post('/update-kolektif/{token}', [SuratKeluarController::class, 'updateKolektif']);
 require __DIR__.'/auth.php';
+
+// Rute untuk memproses simpan data (POST)
+Route::post('/update-kolektif/{token}', [SuratKeluarController::class, 'updateKolektif']);
+
+// Rute BARU untuk menampilkan halaman sukses (GET)
+Route::get('/success-isi/{token}', [SuratKeluarController::class, 'showSuccess'])
+     ->name('surat-keluar.success-page');

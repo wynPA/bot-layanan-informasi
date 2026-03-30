@@ -151,6 +151,12 @@
     </div>
 
 <script>
+    // Refresh halaman setiap 2 menit (120000 ms)
+    setTimeout(function()
+    {
+       location.reload();
+    }, 120000);
+    
     // 1. Update Status ke 'Dibaca' & Update Statistik Bar
     function updateStatus(id) {
         const badge = document.getElementById(`status-badge-${id}`);
