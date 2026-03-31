@@ -113,7 +113,6 @@ class SuratKeluarController extends Controller
     // 4. Proses Simpan Bulk (Update Banyak Data Sekaligus)
     public function updateKolektif(Request $request, $token)
     {
-        // Mengambil semua data input dari array 'surat' di form
         $dataSurat = $request->input('surat');
         $today = \Carbon\Carbon::today();
 
@@ -121,13 +120,13 @@ class SuratKeluarController extends Controller
             return redirect()->back()->with('error', 'Tidak ada data yang dikirim.');
         }
 
-        DB::transaction(function () use ($dataSurat, $token, $today) {
+        \DB::transaction(function () use ($dataSurat, $token, $today) {
             foreach ($dataSurat as $id => $input) {
-                $surat = \App\Models\SuratKeluar::where('id', $id)
-                                    ->where('session_token', $token)
-                                    ->firstOrFail();
                 
-                // Tentukan apakah ini data "Hutang" (dibuat sebelum hari ini)
+                $surat = \App\Models\SuratKeluar::where('id', $id)
+                                        ->where('session_token', $token)
+                                        ->firstOrFail();
+                
                 $isHutang = $surat->created_at < $today;
 
                 $surat->update([
@@ -135,9 +134,16 @@ class SuratKeluarController extends Controller
                     'perihal'     => $input['perihal'],
                     'tgl_surat'   => $input['tgl_surat'],
                     'status_isi'  => 'completed',
-                    // JIKA hutang, langsung arsipkan (1). JIKA hari ini, biarkan di dashboard (0).
                     'is_archived' => $isHutang ? 1 : 0 
                 ]);
+
+                // LOGIKA ARSIP OTOMATIS: Jika hutang, buat entry di tabel archives
+                if ($isHutang) {
+                    $surat->archive()->create([
+                        'judul_arsip' => $input['perihal'],
+                        // no_rak, no_box, dll tetap NULL agar masuk ke Card "Transit"
+                    ]);
+                }
             }
         });
 
@@ -158,12 +164,22 @@ class SuratKeluarController extends Controller
 
     public function arsipkanSelesai()
     {
-        // Pindahkan semua yang 'completed' ke arsip (is_archived = 1)
-        SuratKeluar::where('status_isi', 'completed')
-                    ->where('is_archived', 0)
-                    ->update(['is_archived' => 1]);
+        $suratSelesai = SuratKeluar::where('status_isi', 'completed')
+                                    ->where('is_archived', 0)
+                                    ->get();
 
-        return redirect()->back()->with('success', 'Semua surat selesai telah dipindahkan ke arsip.');
+        foreach ($suratSelesai as $surat) {
+            // Buat entry di tabel archives
+            $surat->archive()->create([
+                'judul_arsip' => $surat->perihal,
+                // no_rak, no_box, dll otomatis NULL (Masuk ke Transit)
+            ]);
+
+            // Tandai sebagai diarsipkan di tabel utama
+            $surat->update(['is_archived' => 1]);
+        }
+
+        return redirect()->back()->with('success', 'Data berhasil disapu ke Gudang Transit.');
     }
 
     // 5. Helper: Algoritma Hari Kerja (Excl. Sabtu & Minggu)

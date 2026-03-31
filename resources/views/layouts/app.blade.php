@@ -425,7 +425,7 @@
                         <span>Surat Keluar</span>
                     </a>
 
-                    <a class="nav-link rounded-3 d-flex align-items-center gap-3" href="#">
+                    <a class="nav-link rounded-3 d-flex align-items-center gap-3" {{ request()->is('surat-keluar*') ? 'active' : '' }}" href="{{ route('arsip.index') }}">
                         <i class="bi bi-archive"></i>
                         <span>Arsip Digital</span>
                     </a>
@@ -512,6 +512,7 @@
                 {{ $slot }}
             </main>
 
+            @if(Route::currentRouteName() !== 'arsip.index')
             <div class="fab-container">
                 
                 <button id="scrollToTopBtn" class="fab-universal fab-scroll shadow-sm">
@@ -527,6 +528,8 @@
                 </button>
 
             </div>
+            @endif
+            
         </div>
     </div>
 

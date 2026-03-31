@@ -33,4 +33,9 @@ class SuratKeluar extends Model
     'tgl_surat' => 'date',
     'tgl_retensi' => 'date',
     ];
+
+    public function archive()
+    {
+        return $this->morphOne(Archive::class, 'archivable');
+    }
 }

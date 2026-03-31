@@ -4,6 +4,7 @@ use App\Http\Controllers\ProfileController;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\SuratKeluarController;
+use App\Http\Controllers\ArsipController;
 
 Route::post('/update-status/{id}', [DashboardController::class, 'updateStatus']);
 Route::post('/archive-surat/{id}', [DashboardController::class, 'archive']);
@@ -47,3 +48,8 @@ Route::post('/update-kolektif/{token}', [SuratKeluarController::class, 'updateKo
 // Rute BARU untuk menampilkan halaman sukses (GET)
 Route::get('/success-isi/{token}', [SuratKeluarController::class, 'showSuccess'])
      ->name('surat-keluar.success-page');
+
+Route::get('/arsip', [ArsipController::class, 'index'])->name('arsip.index');
+Route::get('/arsip/transit', [ArsipController::class, 'transit'])->name('arsip.transit');
+Route::post('/arsip/update-location/{id}', [ArsipController::class, 'updateLocation'])->name('arsip.update-location');
+Route::get('/arsip/permanen', [ArsipController::class, 'permanen'])->name('arsip.permanen');

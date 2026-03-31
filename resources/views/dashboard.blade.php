@@ -155,7 +155,7 @@
     setTimeout(function()
     {
        location.reload();
-    }, 120000);
+    }, 60000);
     
     // 1. Update Status ke 'Dibaca' & Update Statistik Bar
     function updateStatus(id) {
@@ -179,14 +179,18 @@
         }
     }
 
-    // 2. Satpam Checklist: Cegah input sebelum dibaca
     function saveChecklist(id, type, element) {
         const badge = document.getElementById(`status-badge-${id}`);
+        
+        // Satpam Checklist: Cegah input sebelum dibaca
         if (badge.innerText.trim().toLowerCase() === 'pending') {
             alert("Surat ini masih berstatus pending. Mohon baca dokumen terlebih dahulu!");
             element.checked = false;
             return;
         }
+
+        // Ambil nilai asli sebelum diubah (untuk berjaga-jaga jika ditolak server)
+        const originalValue = !element.checked;
 
         fetch(`/update-checklist/${id}`, {
             method: 'POST',
@@ -196,31 +200,48 @@
             },
             body: JSON.stringify({ type: type, value: element.checked ? 1 : 0 })
         })
-        .then(response => response.json())
-        .then(data => { checkCompletion(id); });
-    }
-
-    // 3. Animasi Auto-Archive
-    function checkCompletion(id) {
-        const row = document.getElementById(`row-${id}`);
-        const checkboxes = row.querySelectorAll('.process-check');
-        const allChecked = Array.from(checkboxes).every(c => c.checked);
-
-        if (allChecked) {
-            row.style.transition = 'all 0.5s ease';
-            row.style.opacity = '0';
-            row.style.transform = 'translateX(20px)';
-            
-            setTimeout(() => {
-                row.remove();
-                fetch(`/archive-surat/${id}`, { 
-                    method: 'POST', 
-                    headers: { 'X-CSRF-TOKEN': '{{ csrf_token() }}' } 
+        .then(response => {
+            // Jika server menolak (Status 403 atau 400+), kita gagalkan di frontend
+            if (!response.ok) {
+                return response.json().then(data => {
+                    throw new Error(data.message || 'Gagal mengupdate data.');
                 });
-                checkEmptyCategory();
-            }, 500);
-        }
+            }
+            return response.json();
+        })
+        .then(data => {
+            if (data.success) {
+                // Jika berhasil dan data masuk arsip, hapus baris
+                if (data.archived) {
+                    archiveRowLocally(id);
+                } else {
+                    // Jika baru satu yang dicentang, KUNCI checkbox-nya agar tidak bisa di-uncheck
+                    element.disabled = true;
+                }
+            }
+        })
+        .catch(error => {
+            // Jika terjadi error (unchecklist ditolak), kembalikan posisi centang
+            alert(error.message);
+            element.checked = true; // Paksa centang kembali
+        });
     }
+
+    // Fungsi animasi biar rapi
+    function archiveRowLocally(id) {
+        const row = document.getElementById(`row-${id}`);
+        if (!row) return;
+
+        row.style.transition = 'all 0.5s ease';
+        row.style.opacity = '0';
+        row.style.transform = 'translateX(20px)';
+        
+        setTimeout(() => {
+            row.remove();
+            checkEmptyCategory();
+        }, 500);
+    }
+
 
     function checkEmptyCategory() {
         document.querySelectorAll('[id^="category-block-"]').forEach(card => {

@@ -18,12 +18,50 @@ class DashboardController extends Controller
 
     public function updateChecklist(Request $request, $id) {
         $surat = SuratMasuk::findOrFail($id);
-        $type = $request->type; // 'esurat' atau 'srikandi'
+        $type = $request->type; 
+        $newValue = $request->value;
         
+        if ($type == 'esurat' && $surat->check_esurat == 1 && $newValue == 0) {
+            return response()->json(['success' => false, 'message' => 'Pembatalan checkist tidak memungkinkan, mohon segera proses disposisi surat'], 403);
+        }
+        
+        if ($type == 'srikandi' && $surat->check_srikandi == 1 && $newValue == 0) {
+            return response()->json(['success' => false, 'message' => 'Pembatalan checkist tidak memungkinkan, mohon segera proses disposisi surat'], 403);
+        }
+
+        // 1. Update nilai
         if($type == 'esurat') {
             $surat->update(['check_esurat' => $request->value]);
         } else {
             $surat->update(['check_srikandi' => $request->value]);
+        }
+
+        $surat->refresh();
+
+        // 2. LOGIKA PENENTU "LENGKAP" (Sesuai Kategori)
+        $isLengkap = false;
+        if ($surat->kategori == 'Undangan') {
+            // Undangan wajib dua-duanya
+            if ($surat->check_esurat && $surat->check_srikandi) $isLengkap = true;
+        } else {
+            // Selain undangan, cukup esurat saja
+            if ($surat->check_esurat) $isLengkap = true;
+        }
+
+        // 3. EKSEKUSI PEMINDAHAN KE ARSIP
+        if ($isLengkap) {
+            $surat->archive()->updateOrCreate(
+                ['archivable_id' => $surat->id, 'archivable_type' => get_class($surat)],
+                ['judul_arsip' => $surat->perihal ?? $surat->nama_file_utama] // Fallback jika perihal kosong
+            );
+
+            $surat->update(['is_archived' => 1]);
+            
+            return response()->json([
+                'success' => true, 
+                'archived' => true,
+                'message' => 'Lengkap! Dipindahkan ke Transit Arsip.'
+            ]);
         }
 
         return response()->json(['success' => true]);
@@ -45,21 +83,10 @@ class DashboardController extends Controller
         $totalMenunggu = SuratMasuk::where('check_esurat', 0)->count();
 
         // 2. QUERY UTAMA (Yang kita perbaiki tadi)
-        $surat = SuratMasuk::where(function($query) {
-            $query->where('kategori', '!=', 'Undangan')
-                ->where('check_esurat', 0);
-        })
-        ->orWhere(function($query) {
-            $query->where('kategori', 'Undangan')
-                ->where(function($q) {
-                    $q->where('check_esurat', 0)
-                        ->orWhere('check_srikandi', 0);
-                });
-        })
-        ->orderBy('created_at', 'asc')
-        ->get();
+        $surat = SuratMasuk::where('is_archived', 0)
+            ->orderBy('created_at', 'asc')
+            ->get();
 
-        // 3. RETURN (Gunakan compact hanya jika nama variabel di atas sudah benar)
         return view('dashboard', compact('surat', 'totalSuratHarian', 'totalTerproses', 'totalMenunggu'));
     }
     

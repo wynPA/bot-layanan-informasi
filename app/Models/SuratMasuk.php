@@ -24,4 +24,9 @@ class SuratMasuk extends Model
     {
         return $this->hasMany(LampiranSurat::class);
     }
+
+    public function archive()
+    {
+        return $this->morphOne(Archive::class, 'archivable');
+    }
 }

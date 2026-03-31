@@ -9,11 +9,29 @@ return new class extends Migration
     /**
      * Run the migrations.
      */
-    public function up(): void
+    public function up()
     {
         Schema::create('archives', function (Blueprint $table) {
             $table->id();
-            $table->timestamps();
+            
+            // 1. RELASI POLYMORPHIC (Paling Penting)
+            // Ini akan menciptakan kolom archivable_id dan archivable_type
+            $table->morphs('archivable'); 
+
+            // 2. METADATA DASAR
+            $table->string('judul_arsip'); // Diambil otomatis saat pemindahan
+            $table->string('kategori')->nullable(); // Pilihan: Keuangan, Kepegawaian, dll.
+            
+            // 3. LOKASI FISIK (The Physical Map)
+            $table->string('no_rak')->nullable();
+            $table->string('no_box')->nullable();
+            $table->string('no_sampul')->nullable();
+            
+            // 4. AUTOMASI RETENSI (Khusus Keuangan)
+            $table->date('tgl_pemusnahan')->nullable(); 
+            
+            // 5. AUDIT TRAIL
+            $table->timestamps(); // created_at = Tgl Masuk Arsip, updated_at = Tgl Perubahan Lokasi
         });
     }
 
