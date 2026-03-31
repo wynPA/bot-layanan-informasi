@@ -47,7 +47,32 @@ class ArsipController extends Controller
                         ->orderBy('created_at', 'desc')
                         ->get();
 
-        return view('arsip.transit', compact('data'));
+        $doct = [
+            (object)['id' => 1, 'nama' => 'Asli'],
+            (object)['id' => 2, 'nama' => 'Fotokopi'],
+            (object)['id' => 3, 'nama' => 'Salinan'],
+        ];
+
+        $category = [
+            (object)['id' => 1, 'nama' => 'Keuangan'],
+            (object)['id' => 2, 'nama' => 'Kepegawaian'],
+            (object)['id' => 3, 'nama' => 'Umum'],
+            (object)['id' => 4, 'nama' => 'Lainnya'],
+        ];
+        
+        $listRak = [
+            (object)['id' => 1, 'nama' => 'I'],
+            (object)['id' => 2, 'nama' => 'II'],
+            (object)['id' => 3, 'nama' => 'III'],
+        ];
+
+        $listBox = [
+            (object)['id' => 1, 'nama' => '1'],
+            (object)['id' => 2, 'nama' => '2'],
+            (object)['id' => 3, 'nama' => '3'],
+        ];
+
+        return view('arsip.transit', compact('data', 'doct', 'category', 'listRak', 'listBox'));
     }
 
     public function permanen()
