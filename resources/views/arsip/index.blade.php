@@ -73,7 +73,7 @@
                         </div>
                         <p class="text-muted mb-4 flex-grow-1" style="text-align: justify;">Dokumen yang telah melewati masa aktif. Tinjau kembali daftar ini sebelum melakukan pemusnahan fisik.</p>
                         
-                        <a href="#" class="btn btn-outline-danger fw-bold py-3 rounded-3">
+                        <a href="{{ route('arsip.retensi') }}" class="btn btn-outline-danger fw-bold py-3 rounded-3">
                             TINJAU RETENSI <i class="bi bi-exclamation-triangle ms-2"></i>
                         </a>
                     </div>

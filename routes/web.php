@@ -53,3 +53,5 @@ Route::get('/arsip', [ArsipController::class, 'index'])->name('arsip.index');
 Route::get('/arsip/transit', [ArsipController::class, 'transit'])->name('arsip.transit');
 Route::post('/arsip/update-location/{id}', [ArsipController::class, 'updateLocation'])->name('arsip.update-location');
 Route::get('/arsip/permanen', [ArsipController::class, 'permanen'])->name('arsip.permanen');
+Route::get('/arsip/retensi', [ArsipController::class, 'retensi'])->name('arsip.retensi');
+Route::delete('/arsip/destroy/{id}', [ArsipController::class, 'destroy'])->name('arsip.destroy');

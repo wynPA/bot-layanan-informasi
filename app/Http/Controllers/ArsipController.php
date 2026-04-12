@@ -126,4 +126,26 @@ class ArsipController extends Controller
 
         return redirect()->back()->with('success', 'Lokasi fisik berhasil dicatat! Dokumen kini berada di Gudang Utama.');
     }
+
+    public function retensi()
+    {
+        $today = \Carbon\Carbon::today();
+        // Cari data yang masa aktifnya sudah habis
+        $data = \App\Models\Archive::with('archivable')
+                    ->whereNotNull('tgl_pemusnahan')
+                    ->where('tgl_pemusnahan', '<=', $today)
+                    ->orderBy('tgl_pemusnahan', 'asc')
+                    ->get();
+
+        return view('arsip.retensi', compact('data'));
+    }
+
+    public function destroy($id)
+    {
+        $archive = \App\Models\Archive::findOrFail($id);
+        // Di sini kamu bisa tambahkan logika hapus file fisik di storage jika perlu
+        $archive->delete();
+
+        return redirect()->back()->with('success', 'Arsip telah berhasil dimusnahkan dari sistem.');
+    }
 }

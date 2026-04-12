@@ -11,67 +11,82 @@
         <div class="card-body p-0">
             <div class="table-responsive">
                 <table class="table table-hover align-middle mb-0">
-                    <thead class="bg-light">
+                    <thead class="align-middle bg-light">
                         <tr>
-                            <th class="ps-4 align-middle" style="width: 15%;">Masuk pada</th>
-                            <th class="text-center align-middle" style="width: 20%;">Judul</th>
-                            <th class="text-center align-middle" style="width: 10%;">Sumber</th>
-                            <th class="text-center" style="width: 10%;">Fisik Dokumen</th>
-                            <th class="text-center align-middle" style="width: 15%">Kategori</th>
-                            <th class="text-center" style="width: 15%">Lokasi Penyimpanan</th>
+                            <th class="ps-4 d-none d-md-table-cell" style="width: 15%;">Masuk pada</th>
+                            <th class="text-center align-middle" style="width: 18%;">Judul</th>
+                            <th class="d-none d-md-table-cell" style="width: 8%;">Sumber</th>
+                            <th class="d-none d-md-table-cell text-center" style="width: 14%;">Fisik Dokumen</th>
+                            <th class="d-none d-md-table-cell text-center" style="width: 15%">Kategori</th>
+                            <th class="d-none d-md-table-cell text-center" style="width: 15%">Lokasi Penyimpanan</th>
                             <th class="pe-4 text-center align-middle" style="width: 10%">Aksi</th>
                         </tr>
                     </thead>
                     <tbody>
                         @forelse($data as $item)
                         <tr>
-                            <td class="ps-4 text-muted">{{ $item->created_at->format('d/m/Y H:i') }}</td>
-                            <td>{{ $item->judul_arsip }}</td>
-                            <td>
-                                <span class="badge bg-info-subtle text-info border border-info-subtle px-3">
-                                    {{ str_replace('App\\Models\\', '', $item->archivable_type) }}
-                                </span>
-                            </td>
-                            <td>
-                                <select name="fisik_dokumen" class="form-select form-select-sm border-warning-subtle shadow-sm" required>
-                                    <option value="" disabled selected>-- Kondisi --</option>
-                                    @foreach($doct as $f)
-                                        <option value="{{ $f->nama }}">{{ $f->nama }}</option>
-                                    @endforeach
-                                </select>
-                            </td>                            
-                            <td>
-                                <select name="kategori" class="form-select form-select-sm border-warning-subtle shadow-sm" required>
-                                    <option value="" disabled selected>-- Kategori --</option>
-                                    @foreach($category as $cat)
-                                        <option value="{{ $cat->nama }}">{{ $cat->nama }}</option>
-                                    @endforeach
-                                </select>
-                            </td>
-                            <td>
-                                <div class="d-flex flex-column gap-1">
-                                    <select name="no_rak" class="form-select form-select-sm border-warning-subtle" required>
-                                        <option value="" disabled selected>Pilih Rak...</option>
-                                        @foreach($listRak as $rak)
-                                            <option value="{{ $rak->nama }}">{{ $rak->nama }}</option>
+                            <form action="{{ route('arsip.update-location', $item->id) }}" method="POST">
+                            @csrf
+                                <td class="d-none d-md-table-cell  ps-4 text-muted">{{ $item->created_at->format('d/m/Y H:i') }}</td>
+                                <td>                                                         
+                                    {{ str_replace('.pdf', '', $item->judul_arsip) }}
+                                </td> 
+                                <td class="d-none d-md-table-cell">
+                                    <span class="badge {{ $item->archivable_type == 'App\Models\SuratMasuk' ? 'bg-success-subtle text-success' : 'bg-primary-subtle text-primary' }} border border-opacity-10">
+                                        {{ $item->archivable_type == 'App\Models\SuratMasuk' ? 'Surat Masuk' : 'Surat Keluar' }}
+                                    </span>
+                                </td>
+                                <td class="d-none d-md-table-cell">
+                                    <select name="fisik_dokumen" class="form-select form-select-sm border-warning-subtle shadow-sm" required>
+                                        <option value="" disabled selected>-- Kondisi --</option>
+                                        @foreach($doct as $f)
+                                            <option value="{{ $f->nama }}">{{ $f->nama }}</option>
                                         @endforeach
                                     </select>
-
-                                    <select name="no_box" class="form-select form-select-sm border-warning-subtle" required>
-                                        <option value="" disabled selected>Pilih Box...</option>
-                                        @foreach($listBox as $box)
-                                            <option value="{{ $box->nama }}">{{ $box->nama }}</option>
+                                </td>                            
+                                <td class="d-none d-md-table-cell">
+                                    <select name="kategori" class="form-select form-select-sm border-warning-subtle shadow-sm" required>
+                                        <option value="" disabled selected>-- Kategori --</option>
+                                        @foreach($category as $cat)
+                                            <option value="{{ $cat->nama }}">{{ $cat->nama }}</option>
                                         @endforeach
                                     </select>
+                                </td>
+                                <td class="d-none d-md-table-cell"> 
+                                    <div class="d-flex flex-column gap-1">
+                                        <select name="no_rak" class="form-select form-select-sm border-warning-subtle" required>
+                                            <option value="" disabled selected>Pilih Rak...</option>
+                                            @foreach($listRak as $rak)
+                                                <option value="{{ $rak->nama }}">{{ $rak->nama }}</option>
+                                            @endforeach
+                                        </select>
 
-                                    <input type="text" name="no_sampul" class="form-control form-control-sm" placeholder="Nomor Sampul">
-                                </div>
-                            </td>
-                            <td class="text-center pe-4">
-                                <button class="btn btn-warning btn-sm rounded-3 fw-bold"> 
-                                    <i class="bi bi-floppy"></i>
-                                </button>
-                            </td>
+                                        <select name="no_box" class="form-select form-select-sm border-warning-subtle" required>
+                                            <option value="" disabled selected>Pilih Box...</option>
+                                            @foreach($listBox as $box)
+                                                <option value="{{ $box->nama }}">{{ $box->nama }}</option>
+                                            @endforeach
+                                        </select>
+
+                                        <input type="text" name="no_sampul" class="form-control form-control-sm" placeholder="Nomor Sampul">
+                                    </div>
+                                </td>
+                                <!-- <td class="text-center pe-4">
+                                    <button class="btn btn-warning btn-sm rounded-1 fw-bold"> 
+                                        <i class="bi bi-floppy"></i>
+                                    </button>
+                                </td> -->
+                                <td class="text-center">
+                                    <button type="submit" class="btn btn-warning rounded-1 fw-bold d-none d-md-inline-block">
+                                        <i class="bi bi-floppy"></i>
+                                    </button>
+
+                                    <button type="button" class="btn btn-warning shadow-sm d-md-none" 
+                                            data-bs-toggle="modal" data-bs-target="#modalMobile-{{ $item->id }}">
+                                        <i class="bi bi-pencil-square"></i>
+                                    </button>
+                                </td>
+                            </form> 
                         </tr>
 
                         <div class="modal fade" id="modalInput-{{ $item->id }}" tabindex="-1">
